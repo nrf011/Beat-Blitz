@@ -1,6 +1,8 @@
 import pygame, sys
 from pygame import mixer
 from button import Button
+import threading
+import random
 
 pygame.init()
 
@@ -19,8 +21,27 @@ volume = mixer.music.set_volume(1.0)
 click = mixer.Sound("assets/click.wav")
 hover = mixer.Sound("assets/hover.wav")
 
+# loading image
+loading_image = pygame.image.load("assets/loading2.png")
+loading_image_rect = loading_image.get_rect(center=(640, 360))
+loading_finished = False
+loading_progress = 0
+rotation_speed = 1  # Adjust this value for slower or faster rotation
+
+#Clock
+CLOCK = pygame.time.Clock()
+
+#work
+WORK = 100000000
+
+
 def get_font(size): # Returns Press-Start-2P in the desired size
     return pygame.font.Font("assets/font.ttf", size)
+
+# finished text
+finished_font = get_font(30)
+finished_text = finished_font.render("Loading your next track...", True, "white")
+finished_rect = finished_text.get_rect(center=(640, 450))  # Adjusted position
 
 def play(): # the play screen
     pygame.display.set_caption("Play")
@@ -70,15 +91,19 @@ def play(): # the play screen
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if SONG1_BUTTON.checkForInput(PLAY_MOUSE_POS):
                     click.play()
+                    loadingscreen()
                     SONG1()
                 if SONG2_BUTTON.checkForInput(PLAY_MOUSE_POS):
                     click.play()
+                    loadingscreen()
                     SONG2()
                 if SONG3_BUTTON.checkForInput(PLAY_MOUSE_POS):
                     click.play()
+                    loadingscreen()
                     SONG3()
                 if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
                     click.play()
+                    loadingscreen()
                     main_menu()
 
         pygame.display.update()
@@ -190,9 +215,11 @@ def main_menu(): #the main menu
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
                     click.play()
+                    loadingscreen()
                     play()
                 if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
                     click.play()
+                    loadingscreen()
                     options()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     click.play()
@@ -213,7 +240,6 @@ def SONG1(): #song one menu
 
         SONG1_BACK = Button(image=None, pos=(125, 640), 
                             text_input="BACK", font=get_font(45), base_color="White", hovering_color="Green")
-
         SONG1_BACK.changeColor(SONG1_MOUSE_POS)
         SONG1_BACK.update(SCREEN)
 
@@ -243,16 +269,23 @@ def SONG1(): #song one menu
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if EASY1_BUTTON.checkForInput(SONG1_MOUSE_POS):
+                    loadingscreen()
                     SONG1_EASY()
 
                 if MED1_BUTTON.checkForInput(SONG1_MOUSE_POS):
+                    loadingscreen()
                     SONG1_MED()
 
                 if EXP1_BUTTON.checkForInput(SONG1_MOUSE_POS):
+                    loadingscreen()
                     SONG1_EXP()
 
                 if SONG1_BACK.checkForInput(SONG1_MOUSE_POS):
+                    loadingscreen()
                     play()
+                if LEADERBOARD1_BUTTON.checkForInput(SONG1_MOUSE_POS):
+                    loadingscreen()
+                    LEADERBOARD()
 
 
         pygame.display.update()
@@ -300,15 +333,19 @@ def SONG2(): #song 2 menu
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if EASY2_BUTTON.checkForInput(SONG2_MOUSE_POS):
+                    loadingscreen()
                     SONG2_EASY()
 
                 if MED2_BUTTON.checkForInput(SONG2_MOUSE_POS):
+                    loadingscreen()
                     SONG2_MED()
 
                 if EXP2_BUTTON.checkForInput(SONG2_MOUSE_POS):
+                    loadingscreen()
                     SONG2_EXP()
 
                 if SONG2_BACK.checkForInput(SONG2_MOUSE_POS):
+                    loadingscreen()
                     play()
 
         pygame.display.update()
@@ -357,15 +394,19 @@ def SONG3(): #song 3 menu
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if EASY3_BUTTON.checkForInput(SONG3_MOUSE_POS):
+                    loadingscreen()
                     SONG3_EASY()
 
                 if MED3_BUTTON.checkForInput(SONG3_MOUSE_POS):
+                    loadingscreen()
                     SONG3_MED()
 
                 if EXP3_BUTTON.checkForInput(SONG3_MOUSE_POS):
+                    loadingscreen()
                     SONG3_EXP()
 
                 if SONG3_BACK.checkForInput(SONG3_MOUSE_POS):
+                    loadingscreen()
                     play()
 
         pygame.display.update()
@@ -374,24 +415,32 @@ def LEADERBOARD(): #leaderbaord menu
     while True:
         LEADERBOARD_MOUSE_POS = pygame.mouse.get_pos()
 
-        SCREEN.fill("black")
+        SCREEN.blit(BG,(0,0))
 
-        PLAY_TEXT = get_font(45).render("This is the lb screen.", True, "White")
-        PLAY_RECT = PLAY_TEXT.get_rect(center=(640, 260))
-        SCREEN.blit(PLAY_TEXT, PLAY_RECT)
+        NAME_TEXT = get_font(45).render("Dancer:", True, "White")
+        NAME_RECT = NAME_TEXT.get_rect(center=(235, 200))
+       
 
-        PLAY_BACK = Button(image=None, pos=(640, 460), 
-                            text_input="BACK", font=get_font(75), base_color="White", hovering_color="Green")
+        SCORE_TEXT=get_font(45).render("Beat:",True, "white")
+        SCORE_RECT=SCORE_TEXT.get_rect(center=(800,200))
+        
+        LEADERBOARD_BACK = Button(image=None, pos=(125, 640), 
+                            text_input="BACK", font=get_font(45), base_color="White", hovering_color="Green")
 
-        PLAY_BACK.changeColor(LEADERBOARD_MOUSE_POS)
-        PLAY_BACK.update(SCREEN)
+        LEADERBOARD_BACK.changeColor(LEADERBOARD_MOUSE_POS)
+        LEADERBOARD_BACK.update(SCREEN)
+
+        LEADERBOARD_HEADER_TEXT=get_font(50).render("LEADERBOARD",True,"#f000fb")
+        LEADERBOARD_HEADER_RECT=SCORE_TEXT.get_rect(center=(600,100))
+        SCREEN.blit(LEADERBOARD_HEADER_TEXT,LEADERBOARD_HEADER_RECT)
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if PLAY_BACK.checkForInput(LEADERBOARD_MOUSE_POS):
+                if LEADERBOARD_BACK.checkForInput(LEADERBOARD_MOUSE_POS):
                     play()
 
         pygame.display.update()
@@ -733,8 +782,42 @@ def SONG3_EXP():
 
         pygame.display.update()
 
+def doWork():
+    # do some math work for a certain amount of time
+    global loading_finished, loading_progress
 
+    for i in range(WORK):
+        math_equation = 523687 / 756397 * 52803
+        loading_progress += 1  # Increment loading progress
+        pygame.time.delay(2)  # Introduce a small delay to slow down the loop
+
+    loading_finished = True
+
+def loadingscreen():
+    global loading_finished, loading_progress
+
+    loading_time = pygame.time.get_ticks() + random.randint(1000, 2000)  # Set the end time
+
+    while not loading_finished and pygame.time.get_ticks() < loading_time:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        SCREEN.blit(BG, (0, 0))
+
+        # Rotate the loading image
+        loading_image_rotated = pygame.transform.rotate(loading_image, loading_progress % 360)
+        loading_image_rect = loading_image_rotated.get_rect(center=(640, 360))
+
+        SCREEN.blit(loading_image_rotated, loading_image_rect)
+        SCREEN.blit(finished_text, finished_rect)
+
+        pygame.display.update()
+        CLOCK.tick(60)
+
+# threading
+threading.Thread(target=lambda: doWork()).start()
 
 main_menu()
-#song1_Mode()
  
