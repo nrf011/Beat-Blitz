@@ -1,4 +1,5 @@
 import pygame
+from pygame import mixer
 from random import choice
 import sys
 import time
@@ -14,7 +15,14 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 background = pygame.image.load('assets/City.GIF').convert()
 font = pygame.font.Font(None, 36)
 pygame.display.set_caption("Beat Blitz")
+icon = pygame.image.load("assets/B.png")
+pygame.display.set_icon(icon)
 SCORE = 0
+
+# MUSIC
+mixer.music.load("assets/ybmf.mp3")
+mixer.music.play(-1)
+volume = mixer.music.set_volume(1.0)
 
 # Create Sprites
 UP_ARROW = Arrow("assets/up_arrow.png", 250, 710)
@@ -105,30 +113,35 @@ sprites = [UP_ARROW, DOWN_ARROW, RIGHT_ARROW, LEFT_ARROW]
 # Game loop
 clock = pygame.time.Clock()
 time_last_color_change = 0
+time_last_arrow_spawn = pygame.time.get_ticks()
 
 
 while True:
+    current_time = pygame.time.get_ticks()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            #if event.key == pygame.K_SPACE:
                 # Spawn a random sprite
-                random_arrow = choice(sprites)
-                all_sprites.add(random_arrow)
+                #random_arrow = choice(sprites)
+                #all_sprites.add(random_arrow)
             
             # UP ARROW
             if event.key == pygame.K_a: 
                 if UP_ARROW.rect.y > 30 and UP_ARROW.rect.y < 70 :
                     SCORE += 100
                     STILL_UP.image = gld_u
+                    UP_ARROW.rect.y = 710
                     UP_ARROW.kill()
                 elif UP_ARROW.rect.y > 15 and UP_ARROW.rect.y < 85 :
                     SCORE += 50
                     STILL_UP.image = grn_u
+                    UP_ARROW.rect.y = 710
                     UP_ARROW.kill()
                 else:
+                    UP_ARROW.rect.y = 710
                     UP_ARROW.kill()
                     SCORE -= 25
             
@@ -137,17 +150,18 @@ while True:
             if event.key == pygame.K_s: 
                 if DOWN_ARROW.rect.y > 30 and DOWN_ARROW.rect.y < 70 :
                     SCORE += 100
+                    DOWN_ARROW.rect.y = 710
                     DOWN_ARROW.kill()
                     STILL_DOWN.image = gld_d
-                    
                 
                 elif DOWN_ARROW.rect.y > 15 and DOWN_ARROW.rect.y < 85 :
                     SCORE += 50
+                    DOWN_ARROW.rect.y = 710
                     DOWN_ARROW.kill()
                     STILL_DOWN.image = grn_d
     
-    
                 else:
+                    DOWN_ARROW.rect.y = 710
                     DOWN_ARROW.kill()
                     SCORE -= 25
                 
@@ -156,12 +170,15 @@ while True:
                 if LEFT_ARROW.rect.y > 30 and LEFT_ARROW.rect.y < 70 :
                     SCORE += 100
                     STILL_LEFT.image = gld_l
+                    LEFT_ARROW.rect.y = 710
                     LEFT_ARROW.kill()
                 elif LEFT_ARROW.rect.y > 15 and LEFT_ARROW.rect.y < 85 :
                     SCORE += 50
                     STILL_LEFT.image = grn_l
+                    LEFT_ARROW.rect.y = 710
                     LEFT_ARROW.kill()
                 else:
+                    LEFT_ARROW.rect.y = 710
                     LEFT_ARROW.kill()
                     SCORE -= 25
             # RIGHT ARROW
@@ -169,25 +186,42 @@ while True:
                 if RIGHT_ARROW.rect.y > 30 and RIGHT_ARROW.rect.y < 70 :
                     SCORE += 100
                     STILL_RIGHT.image = gld_r
+                    RIGHT_ARROW.rect.y = 710
                     RIGHT_ARROW.kill()
                 elif RIGHT_ARROW.rect.y > 15 and RIGHT_ARROW.rect.y < 85 :
                     SCORE += 50
                     STILL_RIGHT.image = grn_r
+                    RIGHT_ARROW.rect.y = 710
                     RIGHT_ARROW.kill()
                 else:
+                    RIGHT_ARROW.rect.y = 710
                     RIGHT_ARROW.kill()
                     SCORE -= 25
-
+    
+    if current_time - time_last_arrow_spawn >= 2000: # ARROW SPAWN RATE
+        random_arrow = choice(sprites)
+        all_sprites.add(random_arrow)
+        time_last_arrow_spawn = current_time
+    
     # Update
     all_still.update()
     all_sprites.update()
+
+    for arrow in all_sprites:
+        if arrow.rect.y <= 10:
+            SCORE -= 25
+            arrow.rect.y = 710
+    
+    if not mixer.music.get_busy():
+        pygame.quit()
+        sys.exit()
 
     print(all_still)
     print(all_sprites)
     print(SCORE)
 
     current_time = pygame.time.get_ticks()
-    if current_time - time_last_color_change >= 500:  # 1000 milliseconds (1 second)
+    if current_time - time_last_color_change >= 500:  # milliseconds (1 second)
         STILL_UP.image = blu_u
         STILL_DOWN.image = blu_d
         STILL_LEFT.image = blu_l
